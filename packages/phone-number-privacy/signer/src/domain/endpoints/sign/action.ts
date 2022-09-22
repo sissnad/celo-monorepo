@@ -122,6 +122,10 @@ export class DomainSignAction implements Action<DomainRestrictedSignatureRequest
           toSequentialDelayDomainState(res.domainStateRecord)
         )
       } else {
+        session.logger.info({
+          message: 'domainStateRecord when responding with error',
+          domainStateRecord: res.domainStateRecord,
+        })
         this.io.sendFailure(res.error, res.status, session.response)
       }
     } catch (error) {

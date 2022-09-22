@@ -30,6 +30,76 @@ const PnpQuotaStatusSchema: t.Type<PnpQuotaStatus> = t.intersection([
   }),
 ])
 
+// // TODO EN: for reference
+// export interface LegacySignMessageResponse {
+//   success: boolean
+//   version?: string
+//   signature?: string
+//   performedQueryCount?: number
+//   totalQuota?: number
+//   blockNumber?: number
+// }
+
+// export interface LegacySignMessageResponseFailure extends LegacySignMessageResponse {
+//   success: false
+//   error: string
+// }
+
+// export interface LegacySignMessageResponseSuccess extends LegacySignMessageResponse {
+//   success: true
+// }
+
+// TODO EN: finish defining each of these and splitting stuff up
+export interface LegacySignMessageResponseSuccess extends PnpQuotaStatus {
+  // TODO EN: can change this to more similarly match the old version or
+  success: true
+  version: string
+  signature: string
+  warnings?: string[]
+}
+
+export interface LegacySignMessageResponseFailure {
+  success: false
+  version: string
+  error: string
+  performedQueryCount?: number
+  totalQuota?: number
+  blockNumber?: number
+  // TODO(2.0.0) audit req/res types - https://github.com/celo-org/celo-monorepo/issues/9804
+  // - signature was previously optionally provided on failure, check sdk for backwards compatibility
+  // NOTE EN: signature was an optional param
+}
+
+export type LegacySignMessageResponse =
+  | LegacySignMessageResponseSuccess
+  | LegacySignMessageResponseFailure
+
+export const LegacySignMessageResponseSchema: t.Type<LegacySignMessageResponse> = t.union([
+  t.intersection([
+    t.type({
+      success: t.literal(true),
+      version: t.string,
+      signature: t.string,
+    }),
+    t.partial({
+      warnings: t.union([t.array(t.string), t.undefined]),
+    }),
+    PnpQuotaStatusSchema,
+  ]),
+  t.intersection([
+    t.type({
+      success: t.literal(false),
+      version: t.string,
+      error: t.string,
+    }),
+    t.partial({
+      performedQueryCount: t.union([t.number, t.undefined]),
+      totalQuota: t.union([t.number, t.undefined]),
+      blockNumber: t.union([t.number, t.undefined]),
+    }),
+  ]),
+])
+
 export interface SignMessageResponseSuccess extends PnpQuotaStatus {
   success: true
   version: string
@@ -155,16 +225,15 @@ export interface DomainRestrictedSignatureResponseSuccess<D extends Domain = Dom
   status: DomainState<D>
 }
 
-export interface DomainRestrictedSignatureResponseFailure<D extends Domain = Domain> {
+export interface DomainRestrictedSignatureResponseFailure {
   success: false
   version: string
   error: string
-  status?: DomainState<D>
 }
 
 export type DomainRestrictedSignatureResponse<D extends Domain = Domain> =
   | DomainRestrictedSignatureResponseSuccess<D>
-  | DomainRestrictedSignatureResponseFailure<D>
+  | DomainRestrictedSignatureResponseFailure
 
 export interface DomainQuotaStatusResponseSuccess<D extends Domain = Domain> {
   success: true
@@ -192,7 +261,6 @@ export interface DisableDomainResponseFailure {
   success: false
   version: string
   error: string
-  // TODO EN revisit if we ever pass in a domain status on failure
 }
 
 export type DisableDomainResponse<D extends Domain = Domain> =
@@ -200,15 +268,10 @@ export type DisableDomainResponse<D extends Domain = Domain> =
   | DisableDomainResponseFailure
 
 // prettier-ignore
-export type DomainResponse<
-  R extends DomainRequest = DomainRequest
-> = R extends DomainRestrictedSignatureRequest<infer D>
-  ? DomainRestrictedSignatureResponse<D>
-  : never | R extends DomainQuotaStatusRequest<infer D2>
-  ? DomainQuotaStatusResponse<D2>
-  : never | R extends DisableDomainRequest<infer D3>
-  ? DisableDomainResponse<D3>
-  : never
+export type DomainResponse<R extends DomainRequest = DomainRequest> =
+  | R extends DomainRestrictedSignatureRequest<infer D> ? DomainRestrictedSignatureResponse<D> : never
+  | R extends DomainQuotaStatusRequest<infer D2> ? DomainQuotaStatusResponse<D2> : never
+  | R extends DisableDomainRequest<infer D3> ? DisableDomainResponse<D3> : never
 
 export function domainRestrictedSignatureResponseSchema<D extends Domain>(
   state: t.Type<DomainState<D>>

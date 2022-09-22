@@ -6,14 +6,14 @@ import {
   identifierIsValidIfExists,
   isBodyReasonablySized,
   KEY_VERSION_HEADER,
+  LegacySignMessageResponse,
+  LegacySignMessageResponseFailure,
+  LegacySignMessageResponseSuccess,
   PnpQuotaStatus,
   send,
   SignerEndpoint,
   SignMessageRequest,
   SignMessageRequestSchema,
-  SignMessageResponse,
-  SignMessageResponseFailure,
-  SignMessageResponseSuccess,
   WarningMessage,
 } from '@celo/phone-number-privacy-common'
 import Logger from 'bunyan'
@@ -37,7 +37,7 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
 
   async init(
     request: Request<{}, {}, unknown>,
-    response: Response<SignMessageResponse>
+    response: Response<LegacySignMessageResponse>
   ): Promise<PnpSession<SignMessageRequest> | null> {
     const logger = response.locals.logger
     if (!super.inputChecks(request, response)) {
@@ -73,11 +73,10 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
 
   sendSuccess(
     status: number,
-    response: Response<SignMessageResponseSuccess>,
+    response: Response<LegacySignMessageResponseSuccess>,
     key: Key,
     signature: string,
     quotaStatus: PnpQuotaStatus,
-    // TODO EN: legacy responses have not had warnings returned
     warnings: string[]
   ) {
     response.set(KEY_VERSION_HEADER, key.version.toString())
@@ -99,7 +98,7 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
   sendFailure(
     error: string,
     status: number,
-    response: Response<SignMessageResponseFailure>,
+    response: Response<LegacySignMessageResponseFailure>,
     quotaStatus?: PnpQuotaStatus
   ) {
     send(

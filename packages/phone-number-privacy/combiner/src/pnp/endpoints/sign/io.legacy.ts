@@ -8,15 +8,15 @@ import {
   hasValidBlindedPhoneNumberParam,
   identifierIsValidIfExists,
   isBodyReasonablySized,
+  LegacySignMessageResponse,
+  LegacySignMessageResponseFailure,
+  LegacySignMessageResponseSchema,
+  LegacySignMessageResponseSuccess,
   PnpQuotaStatus,
   send,
   SignerEndpoint,
   SignMessageRequest,
   SignMessageRequestSchema,
-  SignMessageResponse,
-  SignMessageResponseFailure,
-  SignMessageResponseSchema,
-  SignMessageResponseSuccess,
   WarningMessage,
 } from '@celo/phone-number-privacy-common'
 import Logger from 'bunyan'
@@ -36,10 +36,10 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
     unknown
   > = SignMessageRequestSchema
   readonly responseSchema: t.Type<
-    SignMessageResponse,
-    SignMessageResponse,
+    LegacySignMessageResponse,
+    LegacySignMessageResponse,
     unknown
-  > = SignMessageResponseSchema
+  > = LegacySignMessageResponseSchema
 
   constructor(readonly config: OdisConfig, readonly kit: ContractKit) {
     super(config)
@@ -47,7 +47,7 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
 
   async init(
     request: Request<{}, {}, unknown>,
-    response: Response<SignMessageResponse>
+    response: Response<LegacySignMessageResponse>
   ): Promise<CryptoSession<SignMessageRequest> | null> {
     if (!super.inputChecks(request, response)) {
       return null
@@ -84,7 +84,7 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
 
   sendSuccess(
     status: number,
-    response: Response<SignMessageResponseSuccess>,
+    response: Response<LegacySignMessageResponseSuccess>,
     signature: string,
     quotaStatus: PnpQuotaStatus,
     warnings: string[]
@@ -106,7 +106,7 @@ export class LegacyPnpSignIO extends IO<SignMessageRequest> {
   sendFailure(
     error: ErrorType,
     status: number,
-    response: Response<SignMessageResponseFailure>,
+    response: Response<LegacySignMessageResponseFailure>,
     signature?: string,
     quotaStatus?: PnpQuotaStatus
   ) {

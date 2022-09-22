@@ -75,7 +75,6 @@ export class MockOdis {
           success: false,
           version: 'mock',
           error: 'unauthorized',
-          status: undefined,
         },
       }
     }
@@ -90,7 +89,6 @@ export class MockOdis {
           success: false,
           version: 'mock',
           error: 'incorrect nonce',
-          status: domainState,
         },
       }
     }
@@ -103,7 +101,6 @@ export class MockOdis {
           success: false,
           version: 'mock',
           error: 'request limit exceeded',
-          status: domainState,
         },
       }
     }
@@ -124,7 +121,6 @@ export class MockOdis {
         body: {
           success: false,
           version: 'mock',
-          status: undefined,
           error: (error as Error).toString(),
         },
       }
